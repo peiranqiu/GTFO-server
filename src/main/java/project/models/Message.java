@@ -13,19 +13,20 @@ import javax.persistence.Id;
 import javax.persistence.ManyToOne;
 
 @Entity
-public class Schedule {
+public class Message {
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
   private int id;
 
-  private int day;
-  private int start;
-  private int end;
+  private int userId;
+  private int postId;
+  private String content;
 
   @ManyToOne(cascade = CascadeType.ALL)
   @JsonIgnore
   @OnDelete(action = OnDeleteAction.CASCADE)
-  private Business business;
+  private Chat chat;
+
 
   public int getId() {
     return id;
@@ -35,35 +36,37 @@ public class Schedule {
     this.id = id;
   }
 
-  public int getDay() {
-    return day;
+
+  public String getContent() {
+    return content;
   }
 
-  public void setDay(int day) {
-    this.day = day;
+  public void setContent(String content) {
+    this.content = content;
   }
 
-  public int getStart() {
-    return start;
+
+  public Chat getChat() {
+    return chat;
   }
 
-  public void setStart(int start) {
-    this.start = start;
+  public void setChat(Chat chat) {
+    this.chat = chat;
   }
 
-  public int getEnd() {
-    return end;
+  public int getPostId() {
+    return postId;
   }
 
-  public void setEnd(int end) {
-    this.end = end;
+  public void setPostId(int postId) {
+    this.postId = postId;
   }
 
-  public Business getBusiness() {
-    return business;
+  public int getUserId() {
+    return userId;
   }
 
-  public void setBusiness(Business business) {
-    this.business = business;
+  public void setUserId(int userId) {
+    this.userId = userId;
   }
 }

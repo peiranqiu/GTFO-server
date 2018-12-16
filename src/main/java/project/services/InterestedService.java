@@ -1,0 +1,103 @@
+package project.services;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
+
+import project.models.Business;
+import project.models.Interested;
+import project.models.User;
+import project.repositories.BusinessRepository;
+import project.repositories.InterestedRepository;
+import project.repositories.UserRepository;
+
+
+@RestController
+@CrossOrigin(origins = "*", maxAge = 3600, allowCredentials = "true")
+public class InterestedService {
+  @Autowired
+  InterestedRepository interestedRepository;
+  @Autowired
+  BusinessRepository businessRepository;
+  @Autowired
+  UserRepository userRepository;
+
+  @PostMapping("/api/interested/{businessId}")
+  public void userLikesBusiness(@PathVariable("businessId") int businessId, User user) {
+    Optional<Business> data = businessRepository.findById(businessId);
+
+    if (data.isPresent()) {
+      Business business = data.get();
+
+      List<Interested> intrHistory = (List<Interested>) interestedRepository.findAll();
+      for (Interested intr : intrHistory) {
+        if (intr.getUser().getId() == user.getId()
+                && intr.getBusiness().getId() == businessId) {
+          return;
+        }
+      }
+
+      Interested intr = new Interested();
+      intr.setBusiness(business);
+      intr.setUser(user);
+      interestedRepository.save(intr);
+    }
+  }
+
+  @DeleteMapping("/api/interested/{businessId}")
+  public void userUnLikesBusiness(@PathVariable("businessId") int businessId, User user) {
+    Optional<Business> data = businessRepository.findById(businessId);
+
+    if (data.isPresent()) {
+      Business business = data.get();
+
+      List<Interested> intrHistory = (List<Interested>) interestedRepository.findAll();
+      for (Interested intr : intrHistory) {
+        if (intr.getUser().getId() == user.getId()
+                && intr.getBusiness().getId() == businessId) {
+          interestedRepository.deleteById(intr.getId());
+        }
+      }
+    }
+  }
+
+
+  @GetMapping("/api/interested/{businessId}")
+  public Interested findIfInterested(@PathVariable("businessId") int businessId, User user) {
+    Optional<Business> data = businessRepository.findById(businessId);
+
+    if (data.isPresent()) {
+      Business business = data.get();
+
+      List<Interested> intrHistory = (List<Interested>) interestedRepository.findAll();
+      for (Interested intr : intrHistory) {
+        if (intr.getUser().getId() == user.getId()
+                && intr.getBusiness().getId() == businessId) {
+          return intr;
+        }
+      }
+    }
+    return null;
+  }
+
+  @GetMapping("/api/interested/business/{businessId}")
+  public List<User> findInterestedUsersForBusiness(@PathVariable("businessId") int businessId) {
+    List<User> users = new ArrayList<User>();
+    List<Interested> intrHistory = (List<Interested>) interestedRepository.findAll();
+
+    for (Interested intr : intrHistory) {
+      if (intr.getBusiness().getId() == businessId) {
+        users.add(intr.getUser());
+      }
+    }
+    return users;
+  }
+}

@@ -5,16 +5,14 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.OneToOne;
-import javax.persistence.Table;
 
 @Entity
-@Table(name = "favorite")
-public class Favorite {
+public class Interested {
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
   private int id;
   @OneToOne
-  private Schedule schedule;
+  private Business business;
   @OneToOne
   private User user;
 
@@ -26,19 +24,20 @@ public class Favorite {
     this.id = id;
   }
 
-public User getUser() {
-	return user;
-}
 
-public void setUser(User user) {
-	this.user = user;
-}
+  public Business getBusiness() {
+    return business;
+  }
 
-public Schedule getSchedule() {
-	return schedule;
-}
+  public void setBusiness(Business business) {
+    this.business = business;
+  }
 
-public void setSchedule(Schedule schedule) {
-	this.schedule = schedule;
-}
+  public User getUser() {
+    return user;
+  }
+
+  public void setUser(User user) {
+    this.user = user;
+  }
 }
