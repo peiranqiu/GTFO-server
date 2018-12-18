@@ -1,5 +1,6 @@
 package project.models;
 
+import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
@@ -11,6 +12,7 @@ public class Interested {
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
   private int id;
+
   @OneToOne
   private Business business;
   @OneToOne

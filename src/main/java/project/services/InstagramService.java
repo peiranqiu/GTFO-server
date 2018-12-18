@@ -15,7 +15,6 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
 
@@ -39,6 +38,8 @@ public class InstagramService {
 
   ObjectMapper mapper = new ObjectMapper();
   OkHttpClient client = new OkHttpClient();
+  String INSTAGRAM_URL = "https://api.instagram.com/v1/users/self/";
+  String YELP_URL = "https://api.yelp.com/v3/businesses/";
   String YELP_API_KEY = "apR1p2KGGz8v52Q1KxImt4xNsJ04-MARDS7ssayXkXx8EksSZxOLa1Wfa4"
           + "Fo29v6G0ftWYT6CsWyaknfttuSdu9n14iXEpomQ6-l3ExoZf7ra3kUVYNKeAq3EKpaW3Yx";
 
@@ -51,13 +52,11 @@ public class InstagramService {
   @Autowired
   ScheduleRepository scheduleRepository;
 
-
-  @ResponseBody
-  @GetMapping("/api/instagram/user/create")
-  public User createUser(String token)
+  @PostMapping("/api/instagram/user/{token}")
+  public User createUser(@PathVariable("token") String token)
           throws IOException, JSONException {
 
-    String url = "https://api.instagram.com/v1/users/self/?access_token=" + token;
+    String url = INSTAGRAM_URL + "?access_token=" + token;
 
     Request request = new Request.Builder().url(url).get().addHeader("cache-control", "no-cache").build();
 
@@ -65,22 +64,19 @@ public class InstagramService {
 
     JSONObject object = new JSONObject(response.body().string().trim()).getJSONObject("data");
 
-    User user = new User();
-    user.setInsId(object.getString("id"));
-    user.setUsername(object.getString("username"));
-    user.setPicture(object.getString("profile_picture"));
-    user.setToken(token);
+    String insId = object.getString("id");
+    Optional<User> data = userRepository.findByInsId(insId);
+    if (data.isPresent()) {
+      return data.get();
+    } else {
+      User user = new User();
+      user.setInsId(insId);
+      user.setUsername(object.getString("username"));
+      user.setPicture(object.getString("profile_picture"));
+      user.setToken(token);
 
-    return userRepository.save(user);
-
-  }
-
-  @ResponseBody
-  @GetMapping("/api/instagram/post")
-  public Iterable<Post> findAllPosts()
-          throws IOException, JSONException {
-
-    return postRepository.findAll();
+      return userRepository.save(user);
+    }
   }
 
   @ResponseBody
@@ -94,9 +90,9 @@ public class InstagramService {
     }
   }
 
-  @GetMapping("/api/instagram/user/{userId}/post")
+  @PostMapping("/api/instagram/user/{userId}/post")
   public void findNewPostsForUser(@PathVariable("userId") int userId, User user) throws IOException, JSONException {
-    String url = "https://api.instagram.com/v1/users/self/media/recent/?access_token=";
+    String url = INSTAGRAM_URL + "media/recent/?access_token=";
     url = url + user.getToken();
 
     Request request = new Request.Builder().url(url).get().addHeader("cache-control", "no-cache").build();
@@ -107,15 +103,18 @@ public class InstagramService {
     JSONArray myResponse = (JSONArray) jsonObject.get("data");
 
     int index = 0;
-    while (index < myResponse.length()) {
-      Optional<Post> data = postRepository.findByInsId(myResponse.getJSONObject(index).getString("id"));
-      if (data.isPresent()) {
+    while(index < myResponse.length()) {
+      if(postRepository.findByInsId(myResponse.getJSONObject(index).getString("id")).isPresent()) {
         break;
       }
       index++;
     }
     for (int i = index - 1; i >= 0; i--) {
       JSONObject object = myResponse.getJSONObject(i);
+      Optional<Post> opt = postRepository.findByInsId(object.getString("id"));
+      if (opt.isPresent() || object.isNull("location")) {
+        continue;
+      }
       String name = object.getJSONObject("location").getString("name");
       Double lat = object.getJSONObject("location").getDouble("latitude");
       Double lng = object.getJSONObject("location").getDouble("longitude");
@@ -123,34 +122,34 @@ public class InstagramService {
       if (business != null) {
         Optional<Business> data = businessRepository.findByYelpId(business.getYelpId());
         if (data.isPresent()) {
-          Post post = createPost(object, business, userId);
+          createPost(object, data.get(), user);
         } else {
           Business savedBusiness = businessRepository.save(business);
           saveScheduleForBusiness(business.getYelpId(), savedBusiness);
-          Post post = createPost(object, savedBusiness, userId);
+          createPost(object, savedBusiness, user);
         }
       }
     }
   }
 
-  @GetMapping("/api/instagram/post/create")
-  public Post createPost(JSONObject object, Business business, int userId) throws IOException, JSONException {
+  @PostMapping("/api/instagram/post/create")
+  public void createPost(JSONObject object, Business business, User user) throws IOException, JSONException {
     Post post = new Post();
     post.setInsId(object.getString("id"));
-    post.setUserId(userId);
+    post.setUser(user);
     post.setBusiness(business);
     if (!object.isNull("caption")) {
       post.setContent(object.getJSONObject("caption").getString("text"));
     }
     post.setPhoto(object.getJSONObject("images").getJSONObject("standard_resolution").getString("url"));
-    return postRepository.save(post);
+    postRepository.save(post);
   }
 
   @ResponseBody
   @GetMapping("/api/yelp/business/name/{name}")
   public Business findBusinessByMatching(@PathVariable("name") String name, Double lat, Double lng)
           throws IOException, JSONException {
-    String url = "https://api.yelp.com/v3/businesses/search";
+    String url = YELP_URL + "search";
     url = url + "?term=" + name + "&latitude=" + lat + "&longitude=" + lng;
 
     Request request = new Request.Builder().url(url).get().addHeader("authorization", "Bearer " + YELP_API_KEY)
@@ -158,9 +157,14 @@ public class InstagramService {
 
     Response response = client.newCall(request).execute();
 
-    JSONObject jsonObject = new JSONObject(response.body().string().trim());
-    JSONArray myResponse = (JSONArray) jsonObject.get("businesses");
 
+    JSONObject jsonObject = new JSONObject(response.body().string().trim());
+
+
+    if (jsonObject.isNull("businesses")) {
+      return null;
+    }
+    JSONArray myResponse = (JSONArray) jsonObject.get("businesses");
     if (myResponse.length() < 1) {
       return null;
     }
@@ -175,7 +179,7 @@ public class InstagramService {
 
   @GetMapping("/api/yelp/business/{yelpId}")
   public Business findBusinessByYelpId(@PathVariable("yelpId") String yelpId) throws IOException, JSONException {
-    Request request = new Request.Builder().url("https://api.yelp.com/v3/businesses/" + yelpId).get()
+    Request request = new Request.Builder().url(YELP_URL + yelpId).get()
             .addHeader("authorization", "Bearer " + YELP_API_KEY).addHeader("cache-control", "no-cache").build();
 
     Response response = client.newCall(request).execute();
@@ -186,34 +190,27 @@ public class InstagramService {
     return business;
   }
 
-  @GetMapping("/api/yelp/business/{yelpId}/schedule")
+  @PostMapping("/api/yelp/business/{yelpId}/schedule")
   public void saveScheduleForBusiness(@PathVariable("yelpId") String yelpId, Business business) throws IOException, JSONException {
-    Request request = new Request.Builder().url("https://api.yelp.com/v3/businesses/" + yelpId).get()
+    Request request = new Request.Builder().url(YELP_URL + yelpId).get()
             .addHeader("authorization", "Bearer " + YELP_API_KEY).addHeader("cache-control", "no-cache").build();
 
     Response response = client.newCall(request).execute();
 
     JSONObject object = new JSONObject(response.body().string().trim());
 
-    Iterator<String> keys = object.keys();
-
-    while(keys.hasNext()) {
-      String key = keys.next();
-      if (key.equals("hours")) {
-        JSONArray schedules = object.getJSONArray("hours").getJSONObject(0).getJSONArray("open");
-        for(int i = 0; i<schedules.length(); i++) {
-          Schedule schedule = new Schedule();
-          schedule.setStart(Integer.parseInt(schedules.getJSONObject(i).getString("start")));
-          schedule.setEnd(Integer.parseInt(schedules.getJSONObject(i).getString("end")));
-          schedule.setDay(schedules.getJSONObject(i).getInt("day"));
-          schedule.setBusiness(business);
-          scheduleRepository.save(schedule);
-        }
+    if (!object.isNull("hours")) {
+      JSONArray schedules = object.getJSONArray("hours").getJSONObject(0).getJSONArray("open");
+      for (int i = 0; i < schedules.length(); i++) {
+        Schedule schedule = new Schedule();
+        schedule.setStart(Integer.parseInt(schedules.getJSONObject(i).getString("start")));
+        schedule.setEnd(Integer.parseInt(schedules.getJSONObject(i).getString("end")));
+        schedule.setDay(schedules.getJSONObject(i).getInt("day"));
+        schedule.setBusiness(business);
+        scheduleRepository.save(schedule);
       }
     }
-
   }
-
 
   public Business jsonToBusiness(JSONObject object) throws JSONException {
 
@@ -225,8 +222,15 @@ public class InstagramService {
     business.setPhone(object.getString("phone"));
 
     //address
-    JSONArray address = object.getJSONObject("location").getJSONArray("display_address");
-    business.setAddress(address.get(0).toString() + ", " + address.get(1).toString());
+    String address = "";
+    if (!object.isNull("location")) {
+      JSONArray data = object.getJSONObject("location").getJSONArray("display_address");
+      for (int i = 0; i < data.length(); i++) {
+        address = address + data.get(i).toString() + " ";
+      }
+    }
+    business.setAddress(address);
+
     business.setLatitude(object.getJSONObject("coordinates").getDouble("latitude"));
     business.setLongitude(object.getJSONObject("coordinates").getDouble("longitude"));
 
@@ -257,8 +261,8 @@ public class InstagramService {
         category = "shopping";
         break;
       }
-      if (str.contains("festival") || str.contains("art") || str.contains("museum")
-              || str.contains("culture") || str.contains("galleries")) {
+      if ((str.contains("festival") || str.contains("art") || str.contains("museum")
+              || str.contains("culture") || str.contains("galleries")) && !str.contains("apartment")) {
         category = "art";
         break;
       }

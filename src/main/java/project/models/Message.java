@@ -1,9 +1,12 @@
 package project.models;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
+
+import java.util.Date;
 
 import javax.persistence.CascadeType;
 import javax.persistence.Entity;
@@ -11,39 +14,26 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.ManyToOne;
+import javax.persistence.OneToOne;
 
 @Entity
 public class Message {
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
-  private int id;
+  private int _id;
 
-  private int userId;
-  private int postId;
-  private String content;
+  @OneToOne
+  private User user;
+
+  private int businessId;
+
+  private String text;
+  private Date createdAt;
 
   @ManyToOne(cascade = CascadeType.ALL)
   @JsonIgnore
   @OnDelete(action = OnDeleteAction.CASCADE)
   private Chat chat;
-
-
-  public int getId() {
-    return id;
-  }
-
-  public void setId(int id) {
-    this.id = id;
-  }
-
-
-  public String getContent() {
-    return content;
-  }
-
-  public void setContent(String content) {
-    this.content = content;
-  }
 
 
   public Chat getChat() {
@@ -54,19 +44,44 @@ public class Message {
     this.chat = chat;
   }
 
-  public int getPostId() {
-    return postId;
+  @JsonProperty("_id")
+  public int getId() {
+    return _id;
   }
 
-  public void setPostId(int postId) {
-    this.postId = postId;
+  public void setId(int _id) {
+    this._id = _id;
   }
 
-  public int getUserId() {
-    return userId;
+  public User getUser() {
+    return user;
   }
 
-  public void setUserId(int userId) {
-    this.userId = userId;
+  public void setUser(User user) {
+    this.user = user;
+  }
+
+  public String getText() {
+    return text;
+  }
+
+  public void setText(String text) {
+    this.text = text;
+  }
+
+  public Date getCreatedAt() {
+    return createdAt;
+  }
+
+  public void setCreatedAt(Date createdAt) {
+    this.createdAt = createdAt;
+  }
+
+  public int getBusinessId() {
+    return businessId;
+  }
+
+  public void setBusinessId(int businessId) {
+    this.businessId = businessId;
   }
 }

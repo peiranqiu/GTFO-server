@@ -11,7 +11,9 @@ import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
+import javax.persistence.OneToOne;
 
 @Entity
 public class Post {
@@ -22,7 +24,10 @@ public class Post {
   private int id;
 
   private String insId;
-  private int userId;
+
+  @OneToOne
+  private User user;
+
   private String content = "";
   private String photo;
 
@@ -64,12 +69,12 @@ public class Post {
     this.insId = insId;
   }
 
-  public int getUserId() {
-    return userId;
+  public User getUser() {
+    return user;
   }
 
-  public void setUserId(int userId) {
-    this.userId = userId;
+  public void setUser(User user) {
+    this.user = user;
   }
 
   public int getId() {

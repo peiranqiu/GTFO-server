@@ -1,5 +1,7 @@
 package project.models;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -15,33 +17,17 @@ import javax.persistence.ManyToMany;
 public class User {
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
-  @Column(name = "user_id")
-  private int id;
+  private int _id;
 
   private String insId;
-  private String username;
-  private String picture;
+  private String name;
+  private String avatar;
   private String token;
 
 
   @ManyToMany(fetch = FetchType.LAZY, mappedBy = "users")
   private List<Chat> chats = new ArrayList<>();
 
-  public String getUsername() {
-    return username;
-  }
-
-  public void setUsername(String username) {
-    this.username = username;
-  }
-
-  public String getPicture() {
-    return picture;
-  }
-
-  public void setPicture(String picture) {
-    this.picture = picture;
-  }
 
   public String getToken() {
     return token;
@@ -56,12 +42,31 @@ public class User {
     return chats;
   }
 
+  @JsonProperty("_id")
   public int getId() {
-    return id;
+    return _id;
   }
 
-  public void setId(int id) {
-    this.id = id;
+  public void setId(int _id) {
+    this._id = _id;
+  }
+
+  @JsonProperty("name")
+  public String getUsername() {
+    return name;
+  }
+
+  public void setUsername(String name) {
+    this.name = name;
+  }
+
+  @JsonProperty("avatar")
+  public String getPicture() {
+    return avatar;
+  }
+
+  public void setPicture(String avatar) {
+    this.avatar = avatar;
   }
 
   public String getInsId() {

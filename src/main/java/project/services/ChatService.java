@@ -15,6 +15,7 @@ import java.util.Optional;
 
 import project.models.Message;
 import project.models.Chat;
+import project.models.Post;
 import project.repositories.MessageRepository;
 import project.repositories.ChatRepository;
 import project.repositories.UserRepository;
@@ -83,5 +84,9 @@ public class ChatService {
       return chat.getMessages();
     }
     return null;
+  }
+  @GetMapping("/api/message")
+  public List<Message> findAllMessages() {
+    return (List<Message>) messageRepository.findAll();
   }
 }

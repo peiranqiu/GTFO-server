@@ -45,8 +45,7 @@ public class BusinessService {
           @PathVariable("businessIdId") int businessId) {
     Optional<Business> data = businessRepository.findById(businessId);
     if (data.isPresent()) {
-      Business business = data.get();
-      return business.getSchedules();
+      return data.get().getSchedules();
     }
     return null;
   }
@@ -56,8 +55,7 @@ public class BusinessService {
           @PathVariable("businessId") int businessId) {
     Optional<Business> data = businessRepository.findById(businessId);
     if (data.isPresent()) {
-      Business business = data.get();
-      return business.getPosts();
+      return data.get().getPosts();
     }
     return null;
   }
@@ -72,6 +70,16 @@ public class BusinessService {
     Optional<Post> data = postRepository.findById(postId);
     if (data.isPresent()) {
       return data.get();
+    }
+    return null;
+  }
+
+  @GetMapping("/api/post/{postId}/business")
+  public Business findBusinessForPost(@PathVariable("postId") int postId) {
+    Optional<Post> data = postRepository.findById(postId);
+    if (data.isPresent()) {
+      Post post = data.get();
+      return post.getBusiness();
     }
     return null;
   }

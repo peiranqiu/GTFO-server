@@ -27,9 +27,11 @@ public class UserService {
     }
   }
 
+
   @GetMapping("/api/user")
   public Iterable<User> findAllUsers() {
     return userRepository.findAll();
   }
+
 
 }
