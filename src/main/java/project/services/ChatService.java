@@ -16,6 +16,7 @@ import java.util.Optional;
 import project.models.Message;
 import project.models.Chat;
 import project.models.Post;
+import project.models.User;
 import project.repositories.MessageRepository;
 import project.repositories.ChatRepository;
 import project.repositories.UserRepository;
@@ -44,9 +45,18 @@ public class ChatService {
     chatRepository.deleteById(chatId);
   }
 
+
   @PostMapping("/api/chat")
-  public Chat createChat(@RequestBody Chat newChat) {
-    return chatRepository.save(newChat);
+  public Chat createChat(@RequestBody List<User> users) {
+    Chat chat = new Chat();
+    chat.setUsers(users);
+    chat.setSize(users.size());
+    String name = users.get(0).getUsername();
+    for(int i = 1; i < users.size(); i++) {
+      name = name + ", " + users.get(i).getUsername();
+    }
+    chat.setName(name);
+    return chatRepository.save(chat);
   }
 
   @PutMapping("/api/chat/{chatId}")
@@ -88,5 +98,15 @@ public class ChatService {
   @GetMapping("/api/message")
   public List<Message> findAllMessages() {
     return (List<Message>) messageRepository.findAll();
+  }
+
+
+  @GetMapping("/api/user/{userId}/chat")
+  public List<Chat> findChatsForUser(@PathVariable("userId") int userId) {
+    Optional<User> data = userRepository.findById(userId);
+    if (data.isPresent()) {
+      return data.get().getChats();
+    }
+    return null;
   }
 }

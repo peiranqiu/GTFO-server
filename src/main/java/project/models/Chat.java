@@ -24,14 +24,14 @@ public class Chat {
   private int id;
 
   private String name;
-  private String address;
+  private String address="";
   private Date time;
   private int size;
 
   @OneToMany(mappedBy = "chat", cascade = CascadeType.REMOVE, orphanRemoval = true)
   private List<Message> messages;
 
-  @ManyToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+  @ManyToMany
   @JoinTable(name = "user_chat", joinColumns = {
           @JoinColumn(name = "chat_id")}, inverseJoinColumns = {
           @JoinColumn(name = "user_id")})

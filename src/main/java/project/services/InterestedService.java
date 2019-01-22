@@ -6,6 +6,7 @@ import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.ArrayList;
@@ -31,9 +32,8 @@ public class InterestedService {
   UserRepository userRepository;
 
   @PostMapping("/api/interested/{businessId}")
-  public void userLikesBusiness(@PathVariable("businessId") int businessId, User user) {
+  public void userLikesBusiness(@PathVariable("businessId") int businessId, @RequestBody User user) {
     Optional<Business> data = businessRepository.findById(businessId);
-
     if (data.isPresent()) {
       Business business = data.get();
 
@@ -41,6 +41,7 @@ public class InterestedService {
       for (Interested intr : intrHistory) {
         if (intr.getUser().getId() == user.getId()
                 && intr.getBusiness().getId() == businessId) {
+          interestedRepository.deleteById(intr.getId());
           return;
         }
       }
@@ -52,8 +53,8 @@ public class InterestedService {
     }
   }
 
-  @DeleteMapping("/api/interested/{businessId}")
-  public void userUnLikesBusiness(@PathVariable("businessId") int businessId, User user) {
+  @GetMapping("/api/interested/{businessId}/{userId}")
+  public boolean findIfInterested(@PathVariable("businessId") int businessId, @PathVariable("userId") int userId) {
     Optional<Business> data = businessRepository.findById(businessId);
 
     if (data.isPresent()) {
@@ -61,31 +62,13 @@ public class InterestedService {
 
       List<Interested> intrHistory = (List<Interested>) interestedRepository.findAll();
       for (Interested intr : intrHistory) {
-        if (intr.getUser().getId() == user.getId()
+        if (intr.getUser().getId() == userId
                 && intr.getBusiness().getId() == businessId) {
-          interestedRepository.deleteById(intr.getId());
+          return true;
         }
       }
     }
-  }
-
-
-  @GetMapping("/api/interested/{businessId}")
-  public Interested findIfInterested(@PathVariable("businessId") int businessId, User user) {
-    Optional<Business> data = businessRepository.findById(businessId);
-
-    if (data.isPresent()) {
-      Business business = data.get();
-
-      List<Interested> intrHistory = (List<Interested>) interestedRepository.findAll();
-      for (Interested intr : intrHistory) {
-        if (intr.getUser().getId() == user.getId()
-                && intr.getBusiness().getId() == businessId) {
-          return intr;
-        }
-      }
-    }
-    return null;
+    return false;
   }
 
   @GetMapping("/api/interested/business/{businessId}")

@@ -80,6 +80,26 @@ public class InstagramService {
   }
 
   @ResponseBody
+  @GetMapping("/api/instagram/user/update")
+  public void updateAvatar()
+          throws IOException, JSONException {
+    Iterable<User> users = userRepository.findAll();
+    for (User user : users) {
+      String url = INSTAGRAM_URL + "?access_token=" + user.getToken();
+
+      Request request = new Request.Builder().url(url).get().addHeader("cache-control", "no-cache").build();
+
+      Response response = client.newCall(request).execute();
+
+      JSONObject object = new JSONObject(response.body().string().trim()).getJSONObject("data");
+
+
+      user.setPicture(object.getString("profile_picture"));
+      userRepository.save(user);
+    }
+  }
+
+  @ResponseBody
   @GetMapping("/api/instagram/newpost")
   public void updateAllPosts()
           throws IOException, JSONException {
@@ -103,8 +123,8 @@ public class InstagramService {
     JSONArray myResponse = (JSONArray) jsonObject.get("data");
 
     int index = 0;
-    while(index < myResponse.length()) {
-      if(postRepository.findByInsId(myResponse.getJSONObject(index).getString("id")).isPresent()) {
+    while (index < myResponse.length()) {
+      if (postRepository.findByInsId(myResponse.getJSONObject(index).getString("id")).isPresent()) {
         break;
       }
       index++;

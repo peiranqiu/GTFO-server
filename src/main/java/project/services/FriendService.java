@@ -6,6 +6,7 @@ import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.ArrayList;
@@ -27,7 +28,7 @@ public class FriendService {
   UserRepository userRepository;
 
   @PostMapping("/api/friend/request/{userId}")
-  public void userSendRequest(@PathVariable("userId") int userId, User firstUser) {
+  public void userSendRequest(@PathVariable("userId") int userId, @RequestBody User firstUser) {
     Optional<User> data = userRepository.findById(userId);
 
     if (data.isPresent()) {
@@ -41,6 +42,18 @@ public class FriendService {
     }
   }
 
+  @GetMapping("/api/friend/send/{userId}")
+  public List<User> findFriendSends(@PathVariable("userId") int userId) {
+    List<Friend> friendHistory = (List<Friend>) friendRepository.findAll();
+    List<User> users = new ArrayList<>();
+
+    for (Friend friend : friendHistory) {
+      if (friend.getFirstUser().getId() == userId && !friend.isStatus()) {
+        users.add(friend.getSecondUser());
+      }
+    }
+    return users;
+  }
 
   @GetMapping("/api/friend/request/{userId}")
   public List<Friend> findFriendRequests(@PathVariable("userId") int userId) {

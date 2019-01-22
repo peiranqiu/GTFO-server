@@ -1,5 +1,6 @@
 package project.models;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import java.util.ArrayList;
@@ -26,6 +27,7 @@ public class User {
 
 
   @ManyToMany(fetch = FetchType.LAZY, mappedBy = "users")
+  @JsonIgnore
   private List<Chat> chats = new ArrayList<>();
 
 

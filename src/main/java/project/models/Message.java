@@ -25,10 +25,10 @@ public class Message {
   @OneToOne
   private User user;
 
-  private int businessId;
+  private int businessId = -1;
 
-  private String text;
-  private Date createdAt;
+  private String text="";
+  private Date createdAt = new Date();
 
   @ManyToOne(cascade = CascadeType.ALL)
   @JsonIgnore
