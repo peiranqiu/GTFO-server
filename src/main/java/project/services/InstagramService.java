@@ -32,8 +32,6 @@ import project.repositories.UserRepository;
 
 @RestController
 @CrossOrigin(origins = "*", maxAge = 3600, allowCredentials = "true")
-// @CrossOrigin(origins = "https://foodtruckmapper.herokuapp.com",
-// allowCredentials = "true")
 public class InstagramService {
 
   ObjectMapper mapper = new ObjectMapper();
@@ -62,21 +60,24 @@ public class InstagramService {
 
     Response response = client.newCall(request).execute();
 
-    JSONObject object = new JSONObject(response.body().string().trim()).getJSONObject("data");
+    JSONObject responseObject = new JSONObject(response.body().string().trim());
+    if (responseObject.has("data")) {
+      JSONObject object = responseObject.getJSONObject("data");
+      String insId = object.getString("id");
+      Optional<User> data = userRepository.findByInsId(insId);
+      if (data.isPresent()) {
+        return data.get();
+      } else {
+        User user = new User();
+        user.setInsId(insId);
+        user.setUsername(object.getString("username"));
+        user.setPicture(object.getString("profile_picture"));
+        user.setToken(token);
 
-    String insId = object.getString("id");
-    Optional<User> data = userRepository.findByInsId(insId);
-    if (data.isPresent()) {
-      return data.get();
-    } else {
-      User user = new User();
-      user.setInsId(insId);
-      user.setUsername(object.getString("username"));
-      user.setPicture(object.getString("profile_picture"));
-      user.setToken(token);
-
-      return userRepository.save(user);
+        return userRepository.save(user);
+      }
     }
+    return null;
   }
 
   @ResponseBody
@@ -120,33 +121,35 @@ public class InstagramService {
     Response response = client.newCall(request).execute();
 
     JSONObject jsonObject = new JSONObject(response.body().string().trim());
-    JSONArray myResponse = (JSONArray) jsonObject.get("data");
+    if (jsonObject.has("data")) {
+      JSONArray myResponse = (JSONArray) jsonObject.get("data");
 
-    int index = 0;
-    while (index < myResponse.length()) {
-      if (postRepository.findByInsId(myResponse.getJSONObject(index).getString("id")).isPresent()) {
-        break;
+      int index = 0;
+      while (index < myResponse.length()) {
+        if (postRepository.findByInsId(myResponse.getJSONObject(index).getString("id")).isPresent()) {
+          break;
+        }
+        index++;
       }
-      index++;
-    }
-    for (int i = index - 1; i >= 0; i--) {
-      JSONObject object = myResponse.getJSONObject(i);
-      Optional<Post> opt = postRepository.findByInsId(object.getString("id"));
-      if (opt.isPresent() || object.isNull("location")) {
-        continue;
-      }
-      String name = object.getJSONObject("location").getString("name");
-      Double lat = object.getJSONObject("location").getDouble("latitude");
-      Double lng = object.getJSONObject("location").getDouble("longitude");
-      Business business = findBusinessByMatching(name, lat, lng);
-      if (business != null) {
-        Optional<Business> data = businessRepository.findByYelpId(business.getYelpId());
-        if (data.isPresent()) {
-          createPost(object, data.get(), user);
-        } else {
-          Business savedBusiness = businessRepository.save(business);
-          saveScheduleForBusiness(business.getYelpId(), savedBusiness);
-          createPost(object, savedBusiness, user);
+      for (int i = index - 1; i >= 0; i--) {
+        JSONObject object = myResponse.getJSONObject(i);
+        Optional<Post> opt = postRepository.findByInsId(object.getString("id"));
+        if (opt.isPresent() || object.isNull("location")) {
+          continue;
+        }
+        String name = object.getJSONObject("location").getString("name");
+        Double lat = object.getJSONObject("location").getDouble("latitude");
+        Double lng = object.getJSONObject("location").getDouble("longitude");
+        Business business = findBusinessByMatching(name, lat, lng);
+        if (business != null) {
+          Optional<Business> data = businessRepository.findByYelpId(business.getYelpId());
+          if (data.isPresent()) {
+            createPost(object, data.get(), user);
+          } else {
+            Business savedBusiness = businessRepository.save(business);
+            saveScheduleForBusiness(business.getYelpId(), savedBusiness);
+            createPost(object, savedBusiness, user);
+          }
         }
       }
     }

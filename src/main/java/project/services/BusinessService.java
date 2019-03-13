@@ -42,7 +42,7 @@ public class BusinessService {
 
   @GetMapping("/api/business/{businessId}/schedule")
   public List<Schedule> findSchedulesForBusiness(
-          @PathVariable("businessIdId") int businessId) {
+          @PathVariable("businessId") int businessId) {
     Optional<Business> data = businessRepository.findById(businessId);
     if (data.isPresent()) {
       return data.get().getSchedules();

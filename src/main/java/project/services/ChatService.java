@@ -15,7 +15,6 @@ import java.util.Optional;
 
 import project.models.Message;
 import project.models.Chat;
-import project.models.Post;
 import project.models.User;
 import project.repositories.MessageRepository;
 import project.repositories.ChatRepository;
