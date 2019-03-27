@@ -99,6 +99,10 @@ public class ChatService {
     return (List<Message>) messageRepository.findAll();
   }
 
+  @GetMapping("/api/chat")
+  public List<Chat> findAllChats() {
+    return (List<Chat>) chatRepository.findAll();
+  }
 
   @GetMapping("/api/user/{userId}/chat")
   public List<Chat> findChatsForUser(@PathVariable("userId") int userId) {

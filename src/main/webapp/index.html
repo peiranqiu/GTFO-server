@@ -1,12 +1,357 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="utf-8">
-<meta http-equiv="X-UA-Compatible" content="IE=edge">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Home</title>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="icon" href="./favicon.ico">
+    <link href="./admin.css" rel="stylesheet"/>
+    <link rel="stylesheet"
+          href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css"/>
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.2/css/all.css"
+          integrity="sha384-fnmOCqbTlWIlj8LyTjo7mOUStjsKC4pOpQbqyi7RrhN7udi9RwhKkMHpvLbHG9Sr"
+          crossorigin="anonymous">
+    <script src="https://code.jquery.com/jquery-3.3.1.min.js"
+            integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8="
+            crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/jquery/latest/jquery.min.js"></script>
+    <title>Home</title>
 </head>
+<script>
+    function getCookie(name) {
+        var match = document.cookie.match(new RegExp('(^| )' + name + '=([^;]+)'));
+        if (match) {
+            return match[2];
+        }
+        return false;
+    }
+
+    if (!getCookie('admin')) {
+        var response = prompt("What's David's email address?");
+        if (response === "dchen@gtfo.com") {
+            var now = new Date();
+            now.setTime(now.getTime() + 1 * 3600 * 1 * 1000);
+            document.cookie = "admin=" + response + "; expires=" + now.toUTCString() + ";";
+        }
+        else {
+            window.location.reload();
+        }
+    }
+</script>
 <body>
-<h1>GTFO</h1>
+<div id="profile-page" class="user-page">
+    <div class="container-fluid py-5" id="admin-container">
+        <div class="container admin-user-container">
+            <h2 class="truck-page-title">User</h2>
+            <table class="table table-striped user-table">
+                <thead>
+                <tr>
+                    <th scope="col">ID</th>
+                    <th scope="col">Username</th>
+                    <th scope="col">Groups</th>
+                    <th scope="col">Interested</th>
+                    <th scope="col" class="tool"></th>
+                </tr>
+                </thead>
+                <tbody id="user-section">
+                </tbody>
+            </table>
+        </div>
+
+        <div class="container admin-user-container">
+            <h2 class="truck-page-title">Groups</h2>
+            <table class="table table-striped user-table">
+                <thead>
+                <tr>
+                    <th scope="col">ID</th>
+                    <th scope="col">Group Name</th>
+                    <th scope="col">Group Size</th>
+                    <th scope="col">Decided</th>
+                </tr>
+                </thead>
+                <tbody id="group-section">
+                </tbody>
+            </table>
+        </div>
+        <div class="container admin-truck-container">
+            <h2 class="truck-page-title">Business</h2>
+            <table class="table table-striped truck-table">
+                <thead>
+                <tr>
+                    <th scope="col">Id</th>
+                    <th scope="col">Name</th>
+                    <th scope="col">Address</th>
+                    <th scope="col">Category</th>
+                    <th scope="col" class="tool"></th>
+                    <th scope="col" class="tool-icon"></th>
+                </tr>
+                </thead>
+                <tbody id="business-section">
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
 </body>
 </html>
+
+<script>
+    function getAjax(url, success) {
+        var xhr = window.XMLHttpRequest ? new XMLHttpRequest() : new ActiveXObject(
+            'Microsoft.XMLHTTP');
+        xhr.open('GET', url);
+        xhr.onreadystatechange = function () {
+            if (xhr.readyState > 3 && xhr.status == 200) {
+                success(xhr.responseText);
+            }
+        };
+        xhr.setRequestHeader('X-Requested-With', 'XMLHttpRequest');
+        xhr.send();
+        return xhr;
+    }
+
+    function deleteAjax(url, success) {
+        var xhr = window.XMLHttpRequest ? new XMLHttpRequest() : new ActiveXObject(
+            "Microsoft.XMLHTTP");
+        xhr.open('DELETE', url, true);
+        xhr.onreadystatechange = function () {
+            if (xhr.readyState > 3 && xhr.status === 200) {
+                success(xhr.responseText);
+            }
+        };
+        xhr.setRequestHeader('X-Requested-With', 'XMLHttpRequest');
+        xhr.setRequestHeader('Content-Type', 'application/json; charset=utf-8');
+        xhr.send();
+        return xhr;
+    }
+
+    function putAjax(url, success) {
+        var xhr = window.XMLHttpRequest ? new XMLHttpRequest() : new ActiveXObject(
+            "Microsoft.XMLHTTP");
+        xhr.open('PUT', url, true);
+        xhr.onreadystatechange = function () {
+            if (xhr.readyState > 3 && xhr.status === 200) {
+                success(xhr.responseText);
+            }
+        };
+        xhr.setRequestHeader('X-Requested-With', 'XMLHttpRequest');
+        xhr.setRequestHeader('Content-Type', 'application/json; charset=utf-8');
+        xhr.send();
+        return xhr;
+    }
+
+    $(document).ready(function () {
+        var businessTable = document.getElementById("business-section");
+        var userTable = document.getElementById("user-section");
+        var chatTable = document.getElementById("group-section");
+        var businesses = [];
+        var users = [];
+        getAjax('http://test-gtfo.us-east-2.elasticbeanstalk.com/api/user',
+                function (data) {
+                    if (data !== "") {
+                        users = JSON.parse(data);
+                        for (var i = 0; i < users.length; i++) {
+
+                            var newRow = userTable.insertRow(-1);
+                            var newCell = newRow.insertCell(0);
+                            var newText = document.createTextNode(users[i]._id);
+                            newCell.appendChild(newText);
+                            newCell = newRow.insertCell(1);
+                            newText = document.createTextNode(users[i].name);
+                            newCell.appendChild(newText);
+                            newCell = newRow.insertCell(2);
+                            var string = "<div id='group" + i + "'></div>";
+                            newCell.innerHTML = string;
+                            newCell = newRow.insertCell(3);
+                            var string = "<div id='interest" + i + "'></div>";
+                            newCell.innerHTML = string;
+                            newCell = newRow.insertCell(4);
+                            var string = "<i id='user" + i
+                                         + "' class='fa fa-times ml-3'/>";
+                            newCell.innerHTML = string;
+
+                            (function (i) {
+                                (function () {
+                                    getAjax('http://test-gtfo.us-east-2.elasticbeanstalk.com/api/user/'
+                                            + users[i]._id + '/chat',
+                                        function (group) {
+                                            if (group !== "") {
+                                                document.getElementById("group" + i).innerHTML = JSON.parse(group).length;
+                                            }
+
+                                        });
+                                    getAjax('http://test-gtfo.us-east-2.elasticbeanstalk.com/api/interested/user/'
+                                            + users[i]._id,
+                                        function (intr) {
+                                            if (intr !== "") {
+                                                document.getElementById("interest" + i).innerHTML = JSON.parse(intr).length;
+                                            }
+                                        });
+                                })(i);
+                            })(i);
+
+                        }
+                    }
+                });
+
+        getAjax('http://test-gtfo.us-east-2.elasticbeanstalk.com/api/chat',
+                function (data) {
+                    if (data !== "") {
+                        chats = JSON.parse(data);
+                        for (var i = 0; i < chats.length; i++) {
+                            var newRow = chatTable.insertRow(-1);
+                            var newCell = newRow.insertCell(0);
+                            var newText = document.createTextNode(chats[i].id);
+                            newCell.appendChild(newText);
+                            newCell = newRow.insertCell(1);
+                            newText = document.createTextNode(chats[i].name);
+                            newCell.appendChild(newText);
+                            newCell = newRow.insertCell(2);
+                            newText = document.createTextNode(chats[i].size);
+                            newCell.appendChild(newText);
+                            newCell = newRow.insertCell(3);
+                            var decided = chats[i].address.length > 0 ? 'yes' : 'not yet';
+                            newText = document.createTextNode(decided);
+                            newCell.appendChild(newText);
+                        }
+                    }
+                });
+
+        getAjax('http://test-gtfo.us-east-2.elasticbeanstalk.com/api/business',
+                function (data) {
+                    if (data !== "") {
+                        var arr = JSON.parse(data);
+                        businesses = arr.filter(function (arr) {
+                            return arr.order >= 0
+                        })
+                            .sort(function (a, b) {
+                                return a.order - b.order
+                            })
+                            .concat(arr.filter(function (arr) {
+                                return arr.order < 0
+                            }).reverse());
+
+                        for (var i = 0; i < businesses.length; i++) {
+                            var newRow = businessTable.insertRow(-1);
+                            if (i < 5) {
+                                newRow.setAttribute("style", "background-color: #E5E5E9;");
+                            }
+                            var newCell = newRow.insertCell(0);
+                            var newText = document.createTextNode(businesses[i].id);
+                            newCell.appendChild(newText);
+                            newCell = newRow.insertCell(1);
+                            newText = document.createTextNode(businesses[i].name);
+                            newCell.appendChild(newText);
+                            newCell = newRow.insertCell(2);
+                            newText = document.createTextNode(businesses[i].address);
+                            newCell.appendChild(newText);
+                            newCell = newRow.insertCell(3);
+                            //newText = document.createTextNode(businesses[i].category);
+                            //newCell.appendChild(newText);
+                            var x = document.createElement("SELECT");
+                            x.setAttribute('id', 'category' + i);
+                            var option = document.createElement("option");
+                            option.text = "None";
+                            option.value = "none";
+                            x.add(option);
+                            var option = document.createElement("option");
+                            option.text = "Restaurant";
+                            option.value = "food";
+                            x.add(option);
+                            var option = document.createElement("option");
+                            option.text = "Coffee";
+                            option.value = "coffee";
+                            x.add(option);
+                            var option = document.createElement("option");
+                            option.text = "Music";
+                            option.value = "music";
+                            x.add(option);
+                            var option = document.createElement("option");
+                            option.text = "Shopping";
+                            option.value = "shopping";
+                            x.add(option);
+                            var option = document.createElement("option");
+                            option.text = "Movie";
+                            option.value = "movie";
+                            x.add(option);
+                            var option = document.createElement("option");
+                            option.text = "Art";
+                            option.value = "art";
+                            x.add(option);
+                            newCell.appendChild(x);
+
+                            newCell = newRow.insertCell(4);
+                            var string = "<i id='edit" + i + "' class='fa fa-arrow-up'/>";
+                            newCell.innerHTML = string;
+                            newCell = newRow.insertCell(5);
+                            var string = "<i id='business" + i + "' class='fa fa-times'/>";
+                            if (i < 5) {
+                                string = "<i id='cancel" + i + "' class='fa fa-arrow-down'/>";
+                            }
+                            newCell.innerHTML = string;
+                        }
+                        for (var i = 0; i < businesses.length; i++) {
+                            $("#category" + i).val(
+                                businesses[i].category === "" ? "none" : businesses[i].category);
+                            document.getElementById("category" + i)
+                                .addEventListener("change", function (e) {
+                                    var index = e.target.id.slice(8);
+                                    if (confirm('Are you sure to change ' + businesses[index].name
+                                                + "'s category to " + e.target.value + '?')) {
+                                        putAjax('http://test-gtfo.us-east-2.elasticbeanstalk.com/api/business/'
+                                                + businesses[index].id + '/category/'
+                                                + e.target.value,
+                                            function () {
+                                                window.location.reload();
+                                            });
+                                    }
+                                });
+                            document.getElementById("edit" + i)
+                                .addEventListener("click", function (e) {
+                                    var index = e.target.id.slice(4);
+                                    if (confirm('Are you sure to move ' + businesses[index].name
+                                                + ' to the top?')) {
+                                        putAjax('http://test-gtfo.us-east-2.elasticbeanstalk.com/api/business/'
+                                                + businesses[index].id + '/sticky',
+                                            function () {
+                                                window.location.reload();
+                                            });
+                                    }
+                                });
+                            if (i < 5) {
+                                document.getElementById("cancel" + i)
+                                    .addEventListener("click", function (e) {
+                                        var index = e.target.id.slice(6);
+                                        if (confirm('Are you sure to reset '
+                                                    + businesses[index].name
+                                                    + "'s position?")) {
+                                            putAjax('http://test-gtfo.us-east-2.elasticbeanstalk.com/api/business/'
+                                                    + businesses[index].id + '/reset',
+                                                function () {
+                                                    window.location.reload();
+                                                });
+                                        }
+                                    });
+                            }
+                            else {
+                                document.getElementById("business" + i)
+                                    .addEventListener("click", function (e) {
+                                        var index = e.target.id.slice(8);
+                                        if (confirm('Are you sure to delete '
+                                                    + businesses[index].name + '?')) {
+                                            deleteAjax('http://test-gtfo.us-east-2.elasticbeanstalk.com/api/business/'
+                                                       + businesses[index].id
+                                                       + '/delete',
+                                                function () {
+                                                    window.location.reload();
+                                                });
+                                        }
+                                    });
+                            }
+
+                        }
+                    }
+                });
+
+    });
+</script>

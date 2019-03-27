@@ -1,0 +1,61 @@
+
+body {
+    font-family: "DINPro";
+}
+@font-face {
+    font-family: DINPro;
+    src: url('../resources/font/DINPro-Regular.woff');
+}
+@font-face {
+    font-family: DINPro-Bold;
+    src: url('../resources/font/DINPro-Bold.woff');
+}
+@font-face {
+    font-family: DINPro-Medium;
+    src: url('../resources/font/DINPro-Medium.woff');
+}
+@font-face {
+    font-family: DINPro-Condensed;
+    src: url('../resources/font/DINPro-Condensed.woff');
+}
+
+#admin-container {
+    min-height: calc(100vh - 48px);
+}
+.truck-table td {
+    max-width: 200px;
+    overflow-wrap: break-word;
+}
+.truck-table {
+    overflow-x:auto;
+}
+.tool {
+    width: 100px;
+    text-align: right;
+}
+.tool-icon {
+    width: 100px;
+    display: inline-block;
+    text-align: right;
+}
+
+i {
+    cursor: pointer;
+}
+
+i:hover {
+    color: #F6734B;
+}
+.fa-plus {
+    font-size: 18px;
+    vertical-align: middle;
+}
+#edit-email, #edit-password {
+    border:solid 1px grey !important;
+    width:300px;
+    height:36px;
+    margin-left: auto;
+    margin-right: auto;
+    border-radius: 3px;
+    margin-top:20px;
+}

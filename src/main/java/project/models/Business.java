@@ -27,6 +27,7 @@ public class Business {
   private boolean isOpen = false;
   private String website;
   private String phone;
+  private int _order = -1;
 
   @OneToMany(mappedBy = "business", cascade = CascadeType.ALL, orphanRemoval = true)
   private List<Schedule> schedules;
@@ -129,5 +130,13 @@ public class Business {
 
   public void setPosts(List<Post> posts) {
     this.posts = posts;
+  }
+
+  public int getOrder() {
+    return _order;
+  }
+
+  public void setOrder(int order) {
+    this._order = order;
   }
 }

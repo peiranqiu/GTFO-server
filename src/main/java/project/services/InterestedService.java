@@ -83,4 +83,17 @@ public class InterestedService {
     }
     return users;
   }
+
+  @GetMapping("/api/interested/user/{userId}")
+  public List<Business> findMarkedBusinessForUser(@PathVariable("userId") int userId) {
+    List<Business> businesses = new ArrayList<Business>();
+    List<Interested> intrHistory = (List<Interested>) interestedRepository.findAll();
+
+    for (Interested intr : intrHistory) {
+      if (intr.getUser().getId() == userId) {
+        businesses.add(intr.getBusiness());
+      }
+    }
+    return businesses;
+  }
 }
