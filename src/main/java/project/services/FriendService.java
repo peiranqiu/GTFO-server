@@ -1,5 +1,8 @@
 package project.services;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+
+import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -9,10 +12,15 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
+import okhttp3.MediaType;
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.Response;
 import project.models.Friend;
 import project.models.User;
 import project.repositories.FriendRepository;
@@ -22,13 +30,18 @@ import project.repositories.UserRepository;
 @RestController
 @CrossOrigin(origins = "*", maxAge = 3600, allowCredentials = "true")
 public class FriendService {
+
+  String URL = "https://exp.host/--/api/v2/push/send";
+  ObjectMapper mapper = new ObjectMapper();
+  OkHttpClient client = new OkHttpClient();
+
   @Autowired
   FriendRepository friendRepository;
   @Autowired
   UserRepository userRepository;
 
   @PostMapping("/api/friend/request/{userId}")
-  public void userSendRequest(@PathVariable("userId") int userId, @RequestBody User firstUser) {
+  public void userSendRequest(@PathVariable("userId") int userId, @RequestBody User firstUser) throws IOException {
     Optional<User> data = userRepository.findById(userId);
 
     if (data.isPresent()) {
@@ -39,6 +52,25 @@ public class FriendService {
       friend.setSecondUser(secondUser);
       friend.setStatus(false);
       friendRepository.save(friend);
+
+      String pushToken = secondUser.getPushToken();
+      if(pushToken != null) {
+        JSONObject obj = new JSONObject();
+        obj.put("to", pushToken);
+        obj.put("title", "You've got new friend!");
+        obj.put("body", firstUser.getUsername() + " sent you a friend request");
+        MediaType JSON
+                = MediaType.parse("application/json; charset=utf-8");
+        okhttp3.RequestBody requestBody = okhttp3.RequestBody.create(JSON, obj.toString());
+        Request request = new Request.Builder().url(URL)
+                .post(requestBody)
+                .addHeader("content-Type", "application/json")
+                .addHeader("host", "exp.host")
+                .addHeader("accept-encoding", "gzip, deflate")
+                .addHeader("accept", "application/json")
+                .build();
+        Response response = client.newCall(request).execute();
+      }
     }
   }
 

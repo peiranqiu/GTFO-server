@@ -24,6 +24,7 @@ public class User {
   private String name;
   private String avatar;
   private String token;
+  private String pushToken = null;
 
 
   @ManyToMany(fetch = FetchType.LAZY, mappedBy = "users")
@@ -83,4 +84,11 @@ public class User {
     this.chats = chats;
   }
 
+  public String getPushToken() {
+    return pushToken;
+  }
+
+  public void setPushToken(String pushToken) {
+    this.pushToken = pushToken;
+  }
 }
