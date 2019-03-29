@@ -71,10 +71,13 @@ public class ScheduledTasks {
             if (pushToken != "null") {
               JSONObject obj = new JSONObject();
               obj.put("to", pushToken);
-              obj.put("title", "Time get out!");
+              obj.put("title", "Time to get out!");
               long diffMinutes = (date.getTime() - t) / (60 * 1000) % 60;
-              obj.put("body", chat.getString("name") + " is happening in "
-                      + diffMinutes + " minute at "
+              String str = "in " + diffMinutes + " minute";
+              if(diffMinutes == 0) {
+                str = "now";
+              }
+              obj.put("body", chat.getString("name") + " is happening " + str + " at "
                       + chat.getString("address"));
               MediaType JSON
                       = MediaType.parse("application/json; charset=utf-8");
