@@ -31,6 +31,7 @@ import project.repositories.UserRepository;
 public class ScheduledTasks {
   String URL = "https://exp.host/--/api/v2/push/send";
   String SERVER = "http://test-gtfo.us-east-2.elasticbeanstalk.com/api/";
+  String INSTAGRAM_URL = "https://api.instagram.com/v1/users/self/";
   ObjectMapper mapper = new ObjectMapper();
   OkHttpClient client = new OkHttpClient();
 
@@ -47,6 +48,20 @@ public class ScheduledTasks {
     Response response = client.newCall(request).execute();
   }
 
+  // 1 day
+  @Scheduled(fixedRate = 1000 * 60 * 60 * 24)
+  public void updateAvatar() throws IOException, JSONException {
+    Iterable<User> users = userRepository.findAll();
+    for (User user : users) {
+      String url = INSTAGRAM_URL + "?access_token=" + user.getToken();
+      Request request = new Request.Builder().url(url).get().addHeader("cache-control", "no-cache").build();
+      Response response = client.newCall(request).execute();
+      JSONObject object = new JSONObject(response.body().string().trim()).getJSONObject("data");
+      user.setPicture(object.getString("profile_picture"));
+      userRepository.save(user);
+    }
+  }
+
 
   // 10 min
   @Scheduled(fixedRate = 1000 * 60 * 10)
@@ -58,7 +73,7 @@ public class ScheduledTasks {
     for (int i = 0; i < myResponse.length(); i++) {
       JSONObject chat = myResponse.getJSONObject(i);
       String time = chat.get("time").toString();
-      if(time != "null") {
+      if(!time.equals("null")) {
         SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSZ");
         Date date  = formatter.parse(time);
         Calendar now = Calendar.getInstance();
@@ -68,9 +83,10 @@ public class ScheduledTasks {
           JSONArray users = chat.getJSONArray("users");
           for (int j = 0; j < users.length(); j++) {
             String pushToken = users.getJSONObject(j).get("pushToken").toString();
-            if (pushToken != "null") {
+            if (!pushToken.equals("null")) {
               JSONObject obj = new JSONObject();
               obj.put("to", pushToken);
+              obj.put("badge", 1);
               obj.put("title", "Time to get out!");
               long diffMinutes = (date.getTime() - t) / (60 * 1000) % 60;
               String str = "in " + diffMinutes + " minute";

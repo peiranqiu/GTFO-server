@@ -96,27 +96,30 @@ public class ChatService {
 
       List<User> users = chat.getUsers();
       for (User u : users) {
-        String pushToken = u.getPushToken();
-        if (pushToken != null) {
-          JSONObject obj = new JSONObject();
-          obj.put("to", pushToken);
-          obj.put("title", chat.getName());
-          String text = newMessage.getText();
-          if(text == "") {
-            text = "[shared business]";
+        if(u.getId() != newMessage.getUser().getId()) {
+          String pushToken = u.getPushToken();
+          if (pushToken != null) {
+            JSONObject obj = new JSONObject();
+            obj.put("to", pushToken);
+            obj.put("badge", 1);
+            obj.put("title", chat.getName());
+            String text = newMessage.getText();
+            if(text == "") {
+              text = "[shared business]";
+            }
+            obj.put("body", newMessage.getUser().getUsername() + ": " + text);
+            MediaType JSON
+                    = MediaType.parse("application/json; charset=utf-8");
+            okhttp3.RequestBody requestBody = okhttp3.RequestBody.create(JSON, obj.toString());
+            Request request = new Request.Builder().url(URL)
+                    .post(requestBody)
+                    .addHeader("content-Type", "application/json")
+                    .addHeader("host", "exp.host")
+                    .addHeader("accept-encoding", "gzip, deflate")
+                    .addHeader("accept", "application/json")
+                    .build();
+            Response response = client.newCall(request).execute();
           }
-          obj.put("body", newMessage.getUser().getUsername() + ": " + text);
-          MediaType JSON
-                  = MediaType.parse("application/json; charset=utf-8");
-          okhttp3.RequestBody requestBody = okhttp3.RequestBody.create(JSON, obj.toString());
-          Request request = new Request.Builder().url(URL)
-                  .post(requestBody)
-                  .addHeader("content-Type", "application/json")
-                  .addHeader("host", "exp.host")
-                  .addHeader("accept-encoding", "gzip, deflate")
-                  .addHeader("accept", "application/json")
-                  .build();
-          Response response = client.newCall(request).execute();
         }
       }
 

@@ -58,6 +58,7 @@ public class FriendService {
         JSONObject obj = new JSONObject();
         obj.put("to", pushToken);
         obj.put("title", "You've got new friend!");
+        obj.put("badge", 1);
         obj.put("body", firstUser.getUsername() + " sent you a friend request");
         MediaType JSON
                 = MediaType.parse("application/json; charset=utf-8");
