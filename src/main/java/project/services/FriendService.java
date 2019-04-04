@@ -103,13 +103,32 @@ public class FriendService {
 
 
   @PostMapping("/api/friend/{friendId}")
-  public void userAcceptRequest(@PathVariable("friendId") int friendId) {
+  public void userAcceptRequest(@PathVariable("friendId") int friendId) throws IOException {
 
     Optional<Friend> data = friendRepository.findById(friendId);
     if (data.isPresent()) {
       Friend friend = data.get();
       friend.setStatus(true);
       friendRepository.save(friend);
+
+      String pushToken = friend.getFirstUser().getPushToken();
+      if(pushToken != null) {
+        JSONObject obj = new JSONObject();
+        obj.put("to", pushToken);
+        obj.put("title", "You've got new friend!");
+        obj.put("body", friend.getSecondUser().getUsername() + " accepted your friend request");
+        MediaType JSON
+                = MediaType.parse("application/json; charset=utf-8");
+        okhttp3.RequestBody requestBody = okhttp3.RequestBody.create(JSON, obj.toString());
+        Request request = new Request.Builder().url(URL)
+                .post(requestBody)
+                .addHeader("content-Type", "application/json")
+                .addHeader("host", "exp.host")
+                .addHeader("accept-encoding", "gzip, deflate")
+                .addHeader("accept", "application/json")
+                .build();
+        Response response = client.newCall(request).execute();
+      }
     }
   }
 
