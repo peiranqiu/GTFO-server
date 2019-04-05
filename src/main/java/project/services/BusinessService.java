@@ -8,13 +8,17 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
 import project.models.Business;
+import project.models.Interested;
 import project.models.Post;
 import project.models.Schedule;
+import project.models.User;
 import project.repositories.BusinessRepository;
+import project.repositories.InterestedRepository;
 import project.repositories.PostRepository;
 import project.repositories.ScheduleRepository;
 
@@ -27,6 +31,8 @@ public class BusinessService {
   ScheduleRepository scheduleRepository;
   @Autowired
   PostRepository postRepository;
+  @Autowired
+  InterestedRepository interestedRepository;
 
   @GetMapping("/api/business")
   public List<Business> findAllBusinesses() {
@@ -88,8 +94,15 @@ public class BusinessService {
 
   @DeleteMapping("/api/business/{businessId}/delete")
   public void deleteBusiness(@PathVariable("businessId") int businessId) {
+    List<Interested> intrHistory = (List<Interested>) interestedRepository.findAll();
+    for (Interested intr : intrHistory) {
+      if (intr.getBusiness().getId() == businessId) {
+        interestedRepository.deleteById(intr.getId());
+      }
+    }
     businessRepository.deleteById(businessId);
   }
+
 
   @PutMapping("/api/business/{businessId}/sticky")
   public Business StickyBusiness(@PathVariable("businessId") int businessId) {
@@ -135,14 +148,13 @@ public class BusinessService {
       businessRepository.save(business);
       List<Business> list = (List<Business>) businessRepository.findAll();
       boolean empty = false;
-      for(int i = list.size()-1; i >= 0; i--) {
+      for (int i = list.size() - 1; i >= 0; i--) {
         Business b = list.get(i);
         int o = b.getOrder();
-        if(o > order) {
+        if (o > order) {
           b.setOrder(o - 1);
           businessRepository.save(b);
-        }
-        else if(!empty) {
+        } else if (!empty) {
           empty = true;
           b.setOrder(4);
           businessRepository.save(b);
