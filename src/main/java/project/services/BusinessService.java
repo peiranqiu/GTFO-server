@@ -180,4 +180,21 @@ public class BusinessService {
     }
     return null;
   }
+
+
+  @PutMapping("/api/business/{businessId}/status/{status}")
+  public Business ChangeBusinessStatus(@PathVariable("businessId") int businessId, @PathVariable("status") String status) {
+
+    Optional<Business> data = businessRepository.findById(businessId);
+    if (data.isPresent()) {
+      Business business = data.get();
+      if (status.equals("block")) {
+        business.setOpen(true);
+      } else {
+        business.setOpen(false);
+      }
+      return businessRepository.save(business);
+    }
+    return null;
+  }
 }

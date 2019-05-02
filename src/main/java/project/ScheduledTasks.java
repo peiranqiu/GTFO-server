@@ -56,9 +56,11 @@ public class ScheduledTasks {
       String url = INSTAGRAM_URL + "?access_token=" + user.getToken();
       Request request = new Request.Builder().url(url).get().addHeader("cache-control", "no-cache").build();
       Response response = client.newCall(request).execute();
-      JSONObject object = new JSONObject(response.body().string().trim()).getJSONObject("data");
-      user.setPicture(object.getString("profile_picture"));
-      userRepository.save(user);
+      JSONObject object = new JSONObject(response.body().string().trim());
+      if (object.has("data")) {
+        user.setPicture(object.getJSONObject("data").getString("profile_picture"));
+        userRepository.save(user);
+      }
     }
   }
 

@@ -71,6 +71,41 @@ public class ChatService {
     return chatRepository.save(chat);
   }
 
+  @PutMapping("/api/chat/{chatId}/leave/{userId}")
+  public Chat leaveChat(@PathVariable("chatId") int chatId, @PathVariable("userId") int userId) {
+    Optional<Chat> data = chatRepository.findById(chatId);
+
+    if (data.isPresent()) {
+      Chat chat = data.get();
+      List<User> users = chat.getUsers();
+      for(int i = 0; i < users.size(); i++) {
+        if(users.get(i).getId() == userId) {
+          users.remove(i);
+          chat.setUsers(users);
+          chat.setSize(users.size());
+          return chatRepository.save(chat);
+        }
+      }
+    }
+    return null;
+  }
+
+  @PutMapping("/api/chat/{chatId}/status/{status}")
+  public Chat changeChatStatus(@PathVariable("chatId") int chatId, @PathVariable("status") String status) {
+    Optional<Chat> data = chatRepository.findById(chatId);
+
+    if (data.isPresent()) {
+      Chat chat = data.get();
+      if (status.equals("block")) {
+        chat.setStatus(false);
+      } else {
+        chat.setStatus(true);
+      }
+      return chatRepository.save(chat);
+    }
+    return null;
+  }
+
   @PutMapping("/api/chat/{chatId}")
   public Chat updateChat(@PathVariable("chatId") int chatId, @RequestBody Chat newChat) {
     Optional<Chat> data = chatRepository.findById(chatId);
@@ -80,7 +115,6 @@ public class ChatService {
       chat.setName(newChat.getName());
       chat.setAddress(newChat.getAddress());
       chat.setTime(newChat.getTime());
-      chat.setStatus(newChat.isStatus());
 
       return chatRepository.save(chat);
     }
@@ -156,4 +190,6 @@ public class ChatService {
     }
     return null;
   }
+
+
 }

@@ -50,7 +50,7 @@
                     <th scope="col">Username</th>
                     <th scope="col">Groups</th>
                     <th scope="col">Interested</th>
-                    <th scope="col" class="tool"></th>
+                    <th scope="col">Status</th>
                 </tr>
                 </thead>
                 <tbody id="user-section">
@@ -67,6 +67,7 @@
                     <th scope="col">Group Name</th>
                     <th scope="col">Group Size</th>
                     <th scope="col">Decided</th>
+                    <th scope="col">Status</th>
                 </tr>
                 </thead>
                 <tbody id="group-section">
@@ -166,9 +167,17 @@
                             var string = "<div id='interest" + i + "'></div>";
                             newCell.innerHTML = string;
                             newCell = newRow.insertCell(4);
-                            var string = "<i id='user" + i
-                                         + "' class='fa fa-times ml-3'/>";
-                            newCell.innerHTML = string;
+                            var x = document.createElement("SELECT");
+                            x.setAttribute('id', 'user' + i);
+                            var option = document.createElement("option");
+                            option.text = "Good";
+                            option.value = "true";
+                            x.add(option);
+                            var option = document.createElement("option");
+                            option.text = "Suspended";
+                            option.value = "false";
+                            x.add(option);
+                            newCell.appendChild(x);
 
                             (function (i) {
                                 (function () {
@@ -176,7 +185,8 @@
                                             + users[i]._id + '/chat',
                                         function (group) {
                                             if (group !== "") {
-                                                document.getElementById("group" + i).innerHTML = JSON.parse(group).length;
+                                                document.getElementById("group" + i).innerHTML =
+                                                    JSON.parse(group).length;
                                             }
 
                                         });
@@ -184,11 +194,28 @@
                                             + users[i]._id,
                                         function (intr) {
                                             if (intr !== "") {
-                                                document.getElementById("interest" + i).innerHTML = JSON.parse(intr).length;
+                                                document.getElementById("interest" + i).innerHTML =
+                                                    JSON.parse(intr).length;
                                             }
                                         });
                                 })(i);
                             })(i);
+                        }
+
+                        for (var i = 0; i < users.length; i++) {
+                            $("#user" + i).val(users[i].status? "true" : "false");
+                            document.getElementById("user" + i)
+                                .addEventListener("change", function (e) {
+                                    var index = e.target.id.slice(4);
+                                    var value = e.target.value === "true" ? "unblock" : "block";
+                                    if (confirm('Are you sure to ' + value + ' ' + users[index].name + '?')) {
+                                        putAjax('http://test-gtfo.us-east-2.elasticbeanstalk.com/api/user/'
+                                                + users[index]._id + '/status/' + value,
+                                            function () {
+                                                window.location.reload();
+                                            });
+                                    }
+                                });
 
                         }
                     }
@@ -213,6 +240,33 @@
                             var decided = chats[i].address.length > 0 ? 'yes' : 'not yet';
                             newText = document.createTextNode(decided);
                             newCell.appendChild(newText);
+                            newCell = newRow.insertCell(4);
+                            var x = document.createElement("SELECT");
+                            x.setAttribute('id', 'chat' + i);
+                            var option = document.createElement("option");
+                            option.text = "Good";
+                            option.value = "true";
+                            x.add(option);
+                            var option = document.createElement("option");
+                            option.text = "Suspended";
+                            option.value = "false";
+                            x.add(option);
+                            newCell.appendChild(x);
+                        }
+                        for (var i = 0; i < chats.length; i++) {
+                            $("#chat" + i).val(chats[i].status? "true" : "false");
+                            document.getElementById("chat" + i)
+                                .addEventListener("change", function (e) {
+                                    var index = e.target.id.slice(4);
+                                    var value = e.target.value === "true" ? "unblock" : "block";
+                                    if (confirm('Are you sure to ' + value + ' ' + chats[index].name + '?')) {
+                                        putAjax('http://test-gtfo.us-east-2.elasticbeanstalk.com/api/chat/'
+                                                + chats[index].id + '/status/' + value,
+                                            function () {
+                                                window.location.reload();
+                                            });
+                                    }
+                                });
                         }
                     }
                 });
@@ -246,8 +300,6 @@
                             newText = document.createTextNode(businesses[i].address);
                             newCell.appendChild(newText);
                             newCell = newRow.insertCell(3);
-                            //newText = document.createTextNode(businesses[i].category);
-                            //newCell.appendChild(newText);
                             var x = document.createElement("SELECT");
                             x.setAttribute('id', 'category' + i);
                             var option = document.createElement("option");
@@ -281,14 +333,24 @@
                             newCell.appendChild(x);
 
                             newCell = newRow.insertCell(4);
+                            if (i < 5) {
+                                newCell.innerHTML = "<i id='cancel" + i + "' class='fa fa-arrow-down'/>";
+                            }
+                            newCell = newRow.insertCell(5);
                             var string = "<i id='edit" + i + "' class='fa fa-arrow-up'/>";
                             newCell.innerHTML = string;
-                            newCell = newRow.insertCell(5);
-                            var string = "<i id='business" + i + "' class='fa fa-times'/>";
-                            if (i < 5) {
-                                string = "<i id='cancel" + i + "' class='fa fa-arrow-down'/>";
-                            }
-                            newCell.innerHTML = string;
+                            newCell = newRow.insertCell(6);
+                            var x = document.createElement("SELECT");
+                            x.setAttribute('id', 'business' + i);
+                            var option = document.createElement("option");
+                            option.text = "Good";
+                            option.value = "true";
+                            x.add(option);
+                            var option = document.createElement("option");
+                            option.text = "Suspended";
+                            option.value = "false";
+                            x.add(option);
+                            newCell.appendChild(x);
                         }
                         for (var i = 0; i < businesses.length; i++) {
                             $("#category" + i).val(
@@ -333,21 +395,19 @@
                                         }
                                     });
                             }
-                            else {
-                                document.getElementById("business" + i)
-                                    .addEventListener("click", function (e) {
-                                        var index = e.target.id.slice(8);
-                                        if (confirm('Are you sure to delete '
-                                                    + businesses[index].name + '?')) {
-                                            deleteAjax('http://test-gtfo.us-east-2.elasticbeanstalk.com/api/business/'
-                                                       + businesses[index].id
-                                                       + '/delete',
-                                                function () {
-                                                    window.location.reload();
-                                                });
-                                        }
-                                    });
-                            }
+                            $("#business" + i).val(businesses[i].open? "false" : "true");
+                            document.getElementById("business" + i)
+                                .addEventListener("change", function (e) {
+                                    var index = e.target.id.slice(8);
+                                    var value = e.target.value === "true" ? "unblock" : "block";
+                                    if (confirm('Are you sure to ' + value + ' ' + businesses[index].name + '?')) {
+                                        putAjax('http://test-gtfo.us-east-2.elasticbeanstalk.com/api/business/'
+                                                + businesses[index].id + '/status/' + value,
+                                            function () {
+                                                window.location.reload();
+                                            });
+                                    }
+                                });
 
                         }
                     }

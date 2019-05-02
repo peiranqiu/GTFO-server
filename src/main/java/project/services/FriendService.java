@@ -137,6 +137,18 @@ public class FriendService {
     friendRepository.deleteById(friendId);
   }
 
+  @DeleteMapping("/api/friend/{userId}/delete/{anotherUserId}")
+  public void DeleteFriend(@PathVariable("userId") int userId, @PathVariable("anotherUserId") int anotherUserId) {
+    List<Friend> friendHistory = (List<Friend>) friendRepository.findAll();
+    for (Friend friend : friendHistory) {
+      if ((friend.getFirstUser().getId() == userId && friend.getSecondUser().getId() == anotherUserId)
+              || (friend.getFirstUser().getId() == anotherUserId && friend.getSecondUser().getId() == userId)) {
+        friendRepository.deleteById(friend.getId());
+        return;
+      }
+    }
+  }
+
 
   @GetMapping("/api/friend/user/{userId}")
   public List<User> findFriendList(@PathVariable("userId") int userId) {

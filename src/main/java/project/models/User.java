@@ -6,6 +6,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
@@ -13,6 +14,7 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.ManyToMany;
+import javax.persistence.OneToMany;
 
 @Entity
 public class User {
@@ -26,6 +28,10 @@ public class User {
   private String token;
   private String pushToken = null;
 
+  private boolean status = true;
+
+  @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+  private List<BlockedBusinessId> blockedBusinessId = new ArrayList<>();
 
   @ManyToMany(fetch = FetchType.LAZY, mappedBy = "users")
   @JsonIgnore
@@ -91,4 +97,21 @@ public class User {
   public void setPushToken(String pushToken) {
     this.pushToken = pushToken;
   }
+
+  public List<BlockedBusinessId> getBlockedBusinessId() {
+    return blockedBusinessId;
+  }
+
+  public void setBlockedBusinessId(List<BlockedBusinessId> blockedBusinessId) {
+    this.blockedBusinessId = blockedBusinessId;
+  }
+
+  public boolean isStatus() {
+    return status;
+  }
+
+  public void setStatus(boolean status) {
+    this.status = status;
+  }
 }
+

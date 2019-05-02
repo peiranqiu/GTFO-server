@@ -75,6 +75,7 @@ public class InstagramService {
         user.setUsername(object.getString("username"));
         user.setPicture(object.getString("profile_picture"));
         user.setToken(token);
+        user.setStatus(true);
 
         return userRepository.save(user);
       }
@@ -136,7 +137,7 @@ public class InstagramService {
       for (int i = index - 1; i >= 0; i--) {
         JSONObject object = myResponse.getJSONObject(i);
         Optional<Post> opt = postRepository.findByInsId(object.getString("id"));
-        if (opt.isPresent() || object.isNull("location")) {
+        if (opt.isPresent() || object.isNull("location") || !object.getString("type").equals("image")) {
           continue;
         }
         String name = object.getJSONObject("location").getString("name");
