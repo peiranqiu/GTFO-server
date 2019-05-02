@@ -1,6 +1,5 @@
 package project.services;
 
-import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -15,14 +14,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-import okhttp3.MediaType;
-import okhttp3.Request;
-import okhttp3.Response;
 import project.models.BlockedBusinessId;
-import project.models.Business;
-import project.models.Chat;
-import project.models.Friend;
-import project.models.Message;
 import project.models.User;
 import project.repositories.BlockedBusinessIdRepository;
 import project.repositories.UserRepository;
@@ -74,7 +66,7 @@ public class UserService {
   }
 
   @GetMapping("/api/user")
-  public Iterable<User> findAllUsers() {
+  public List<User> findUsers() {
     List<User> users = new ArrayList<>();
     List<User> userHistory = (List<User>) userRepository.findAll();
     for (User u : userHistory) {
@@ -83,6 +75,11 @@ public class UserService {
       }
     }
     return users;
+  }
+
+  @GetMapping("/api/all/user")
+  public List<User> findAllUsers() {
+    return (List<User>) userRepository.findAll();
   }
 
   @PostMapping("/api/user/{userId}/block/{businessId}")

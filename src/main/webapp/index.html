@@ -147,7 +147,7 @@
         var chatTable = document.getElementById("group-section");
         var businesses = [];
         var users = [];
-        getAjax('http://test-gtfo.us-east-2.elasticbeanstalk.com/api/user',
+        getAjax('http://test-gtfo.us-east-2.elasticbeanstalk.com/api/all/user',
                 function (data) {
                     if (data !== "") {
                         users = JSON.parse(data);
@@ -221,7 +221,7 @@
                     }
                 });
 
-        getAjax('http://test-gtfo.us-east-2.elasticbeanstalk.com/api/chat',
+        getAjax('http://test-gtfo.us-east-2.elasticbeanstalk.com/api/all/chat',
                 function (data) {
                     if (data !== "") {
                         chats = JSON.parse(data);
@@ -271,7 +271,7 @@
                     }
                 });
 
-        getAjax('http://test-gtfo.us-east-2.elasticbeanstalk.com/api/business',
+        getAjax('http://test-gtfo.us-east-2.elasticbeanstalk.com/api/all/business',
                 function (data) {
                     if (data !== "") {
                         var arr = JSON.parse(data);

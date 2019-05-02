@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -156,7 +157,6 @@ public class ChatService {
           }
         }
       }
-
       return messageRepository.save(newMessage);
     }
     return null;
@@ -178,17 +178,35 @@ public class ChatService {
   }
 
   @GetMapping("/api/chat")
-  public List<Chat> findAllChats() {
+  public List<Chat> findChats() {
     return (List<Chat>) chatRepository.findAll();
+  }
+
+  @GetMapping("/api/all/chat")
+  public List<Chat> findAllChats() {
+    List<Chat> chats = new ArrayList<>();
+    List<Chat> chatHistory = (List<Chat>) chatRepository.findAll();
+    for (Chat c : chatHistory) {
+      if (c.isStatus()) {
+        chats.add(c);
+      }
+    }
+    return chats;
   }
 
   @GetMapping("/api/user/{userId}/chat")
   public List<Chat> findChatsForUser(@PathVariable("userId") int userId) {
     Optional<User> data = userRepository.findById(userId);
+    List<Chat> chats = new ArrayList<>();
     if (data.isPresent()) {
-      return data.get().getChats();
+      List<Chat> chatHistory = data.get().getChats();
+      for (Chat c : chatHistory) {
+        if (c.isStatus()) {
+          chats.add(c);
+        }
+      }
     }
-    return null;
+    return chats;
   }
 
 

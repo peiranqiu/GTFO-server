@@ -53,17 +53,18 @@ public class ScheduledTasks {
   public void updateAvatar() throws IOException, JSONException {
     Iterable<User> users = userRepository.findAll();
     for (User user : users) {
-      String url = INSTAGRAM_URL + "?access_token=" + user.getToken();
-      Request request = new Request.Builder().url(url).get().addHeader("cache-control", "no-cache").build();
-      Response response = client.newCall(request).execute();
-      JSONObject object = new JSONObject(response.body().string().trim());
-      if (object.has("data")) {
-        user.setPicture(object.getJSONObject("data").getString("profile_picture"));
-        userRepository.save(user);
+      if(user.isStatus()) {
+        String url = INSTAGRAM_URL + "?access_token=" + user.getToken();
+        Request request = new Request.Builder().url(url).get().addHeader("cache-control", "no-cache").build();
+        Response response = client.newCall(request).execute();
+        JSONObject object = new JSONObject(response.body().string().trim());
+        if (object.has("data")) {
+          user.setPicture(object.getJSONObject("data").getString("profile_picture"));
+          userRepository.save(user);
+        }
       }
     }
   }
-
 
   // 10 min
   @Scheduled(fixedRate = 1000 * 60 * 10)
@@ -110,7 +111,6 @@ public class ScheduledTasks {
               Response pushResponse = client.newCall(pushRequest).execute();
             }
           }
-
         }
       }
     }

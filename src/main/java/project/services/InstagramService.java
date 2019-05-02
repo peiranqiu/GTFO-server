@@ -110,7 +110,9 @@ public class InstagramService {
 
     List<Post> posts = new ArrayList<>();
     for (User u : userRepository.findAll()) {
-      findNewPostsForUser(u.getId(), u);
+      if(u.isStatus()) {
+        findNewPostsForUser(u.getId(), u);
+      }
     }
   }
 

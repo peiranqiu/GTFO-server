@@ -34,9 +34,21 @@ public class BusinessService {
   @Autowired
   InterestedRepository interestedRepository;
 
-  @GetMapping("/api/business")
+  @GetMapping("/api/all/business")
   public List<Business> findAllBusinesses() {
     return (List<Business>) businessRepository.findAll();
+  }
+
+  @GetMapping("/api/business")
+  public List<Business> findBusinesses() {
+    List<Business> businesses = new ArrayList<>();
+    List<Business> businessHistory = (List<Business>) businessRepository.findAll();
+    for (Business b : businessHistory) {
+      if (!b.isOpen()) {
+        businesses.add(b);
+      }
+    }
+    return businesses;
   }
 
   @GetMapping("/api/business/{businessId}")
@@ -160,8 +172,6 @@ public class BusinessService {
           businessRepository.save(b);
         }
       }
-
-
     }
   }
 

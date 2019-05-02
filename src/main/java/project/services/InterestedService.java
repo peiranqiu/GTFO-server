@@ -77,7 +77,7 @@ public class InterestedService {
     List<Interested> intrHistory = (List<Interested>) interestedRepository.findAll();
 
     for (Interested intr : intrHistory) {
-      if (intr.getBusiness().getId() == businessId) {
+      if (intr.getBusiness().getId() == businessId && intr.getUser().isStatus()) {
         users.add(intr.getUser());
       }
     }
@@ -88,9 +88,8 @@ public class InterestedService {
   public List<Business> findMarkedBusinessForUser(@PathVariable("userId") int userId) {
     List<Business> businesses = new ArrayList<Business>();
     List<Interested> intrHistory = (List<Interested>) interestedRepository.findAll();
-
     for (Interested intr : intrHistory) {
-      if (intr.getUser().getId() == userId) {
+      if (intr.getUser().getId() == userId && !intr.getBusiness().isOpen()) {
         businesses.add(intr.getBusiness());
       }
     }
