@@ -79,8 +79,8 @@ public class ChatService {
     if (data.isPresent()) {
       Chat chat = data.get();
       List<User> users = chat.getUsers();
-      for(int i = 0; i < users.size(); i++) {
-        if(users.get(i).getId() == userId) {
+      for (int i = 0; i < users.size(); i++) {
+        if (users.get(i).getId() == userId) {
           users.remove(i);
           chat.setUsers(users);
           chat.setSize(users.size());
@@ -131,7 +131,7 @@ public class ChatService {
 
       List<User> users = chat.getUsers();
       for (User u : users) {
-        if(u.getId() != newMessage.getUser().getId()) {
+        if (u.getId() != newMessage.getUser().getId()) {
           String pushToken = u.getPushToken();
           if (pushToken != null) {
             JSONObject obj = new JSONObject();
@@ -139,7 +139,7 @@ public class ChatService {
             obj.put("badge", 1);
             obj.put("title", chat.getName());
             String text = newMessage.getText();
-            if(text == "") {
+            if (text == "") {
               text = "[shared business]";
             }
             obj.put("body", newMessage.getUser().getUsername() + ": " + text);
@@ -179,11 +179,7 @@ public class ChatService {
 
   @GetMapping("/api/chat")
   public List<Chat> findChats() {
-    return (List<Chat>) chatRepository.findAll();
-  }
 
-  @GetMapping("/api/all/chat")
-  public List<Chat> findAllChats() {
     List<Chat> chats = new ArrayList<>();
     List<Chat> chatHistory = (List<Chat>) chatRepository.findAll();
     for (Chat c : chatHistory) {
@@ -192,6 +188,11 @@ public class ChatService {
       }
     }
     return chats;
+  }
+
+  @GetMapping("/api/all/chat")
+  public List<Chat> findAllChats() {
+    return (List<Chat>) chatRepository.findAll();
   }
 
   @GetMapping("/api/user/{userId}/chat")
