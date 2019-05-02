@@ -81,7 +81,7 @@ public class FriendService {
     List<User> users = new ArrayList<>();
 
     for (Friend friend : friendHistory) {
-      if (friend.getFirstUser().getId() == userId && !friend.isStatus()) {
+      if (friend.getFirstUser().getId() == userId && !friend.isStatus() && friend.getSecondUser().isStatus()) {
         users.add(friend.getSecondUser());
       }
     }
@@ -94,7 +94,7 @@ public class FriendService {
     List<Friend> friendHistory = (List<Friend>) friendRepository.findAll();
 
     for (Friend friend : friendHistory) {
-      if (friend.getSecondUser().getId() == userId && !friend.isStatus()) {
+      if (friend.getSecondUser().getId() == userId && !friend.isStatus() && friend.getFirstUser().isStatus()) {
         friends.add(friend);
       }
     }
@@ -156,9 +156,9 @@ public class FriendService {
     List<Friend> friendHistory = (List<Friend>) friendRepository.findAll();
 
     for (Friend friend : friendHistory) {
-      if (friend.getFirstUser().getId() == userId && friend.isStatus()) {
+      if (friend.getFirstUser().getId() == userId && friend.isStatus() && friend.getSecondUser().isStatus()) {
         users.add(friend.getSecondUser());
-      } else if (friend.getSecondUser().getId() == userId && friend.isStatus()) {
+      } else if (friend.getSecondUser().getId() == userId && friend.isStatus() && friend.getFirstUser().isStatus()) {
         users.add(friend.getFirstUser());
       }
     }

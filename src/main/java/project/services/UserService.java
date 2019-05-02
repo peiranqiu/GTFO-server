@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -20,6 +21,7 @@ import okhttp3.Response;
 import project.models.BlockedBusinessId;
 import project.models.Business;
 import project.models.Chat;
+import project.models.Friend;
 import project.models.Message;
 import project.models.User;
 import project.repositories.BlockedBusinessIdRepository;
@@ -73,7 +75,14 @@ public class UserService {
 
   @GetMapping("/api/user")
   public Iterable<User> findAllUsers() {
-    return userRepository.findAll();
+    List<User> users = new ArrayList<>();
+    List<User> userHistory = (List<User>) userRepository.findAll();
+    for (User u : userHistory) {
+      if (u.isStatus()) {
+        users.add(u);
+      }
+    }
+    return users;
   }
 
   @PostMapping("/api/user/{userId}/block/{businessId}")
