@@ -12,8 +12,6 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -95,11 +93,11 @@ public class InstagramService {
 
       Response response = client.newCall(request).execute();
 
-      JSONObject object = new JSONObject(response.body().string().trim()).getJSONObject("data");
-
-
-      user.setPicture(object.getString("profile_picture"));
-      userRepository.save(user);
+      JSONObject object = new JSONObject(response.body().string().trim());
+      if (object.has("data")) {
+        user.setPicture(object.getJSONObject("data").getString("profile_picture"));
+        userRepository.save(user);
+      }
     }
   }
 
@@ -110,7 +108,7 @@ public class InstagramService {
 
     List<Post> posts = new ArrayList<>();
     for (User u : userRepository.findAll()) {
-      if(u.isStatus()) {
+      if (u.isStatus()) {
         findNewPostsForUser(u.getId(), u);
       }
     }
@@ -124,7 +122,6 @@ public class InstagramService {
     Request request = new Request.Builder().url(url).get().addHeader("cache-control", "no-cache").build();
 
     Response response = client.newCall(request).execute();
-
     JSONObject jsonObject = new JSONObject(response.body().string().trim());
     if (jsonObject.has("data")) {
       JSONArray myResponse = (JSONArray) jsonObject.get("data");
@@ -167,7 +164,9 @@ public class InstagramService {
     post.setUser(user);
     post.setBusiness(business);
     if (!object.isNull("caption")) {
-      post.setContent(object.getJSONObject("caption").getString("text"));
+      String s = object.getJSONObject("caption").getString("text");
+      s = s.substring(0, Math.min(s.length(), 100));
+      post.setContent(s);
     }
     post.setPhoto(object.getJSONObject("images").getJSONObject("standard_resolution").getString("url"));
     postRepository.save(post);
@@ -246,7 +245,9 @@ public class InstagramService {
 
     business.setYelpId(object.getString("id"));
     business.setName(object.getString("name"));
-    business.setWebsite(object.getString("url"));
+    String url = object.getString("url");
+    url = url.substring(0, Math.min(url.length(), 254));
+    business.setWebsite(url);
     business.setPhone(object.getString("phone"));
 
     //address

@@ -38,8 +38,8 @@ public class ScheduledTasks {
   @Autowired
   UserRepository userRepository;
 
-  // 10 min
-  @Scheduled(fixedRate = 1000 * 60 * 10)
+  // 30 min
+  @Scheduled(fixedRate = 1000 * 60 * 30)
   public void updateAll() throws IOException, JSONException {
     String url = SERVER + "instagram/newpost";
 

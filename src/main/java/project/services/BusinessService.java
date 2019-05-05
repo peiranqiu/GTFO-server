@@ -44,7 +44,7 @@ public class BusinessService {
     List<Business> businesses = new ArrayList<>();
     List<Business> businessHistory = (List<Business>) businessRepository.findAll();
     for (Business b : businessHistory) {
-      if (!b.isOpen()) {
+      if (!b.isOpen() && b.getPosts().size() > 0) {
         businesses.add(b);
       }
     }
