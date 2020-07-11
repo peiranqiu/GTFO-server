@@ -2,7 +2,11 @@
 
 The mobile app allows users to quickly discover interesting offline activities and efficiently organize outings with friends.
 
+Related Repository: [GTFO-client](https://github.com/peiranqiu/GTFO-client)
+
 App store link: https://apps.apple.com/us/app/getthefunoutside/id1454336645
+
+.
 
 •	A mobile app to create outing plans with friends more easily with reduced decision & planning time
 
