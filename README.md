@@ -4,7 +4,7 @@ The mobile app allows users to quickly discover interesting offline activities a
 
 Related Repository: [GTFO-client](https://github.com/peiranqiu/GTFO-client)
 
-App store link: https://apps.apple.com/us/app/getthefunoutside/id1454336645
+App store link: https://apps.apple.com/us/app/getthefunoutside/id1454336645 (not maintained anymore)
 
 .
 
